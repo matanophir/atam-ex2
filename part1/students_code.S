@@ -24,8 +24,27 @@ keyMixing:
 
 
 byteSubstitution:
-	ret
+    pushq %rbp # not actually needed here..
+    movq %rsp, %rbp
 
+    leaq sbox(%rip), %rsi 
+ 
+    mov $16,%rcx
+
+    #rdi = input_ptr
+    #rsi = sbox_ptr 
+    #rcx : counter
+
+    loopbs:
+        movsbq (%rdi), %rax
+        mov (%rax,%rsi), %dl
+        mov %dl, (%rdi)
+        inc %rdi                
+
+        loop loopbs
+
+    leave
+	ret
 
 shiftRows:
 	ret
