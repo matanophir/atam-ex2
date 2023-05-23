@@ -20,7 +20,20 @@ sbox:	.byte	99,124,119,123,-14,107,111,-59,48,1,103,43,-2,-41,-85,118
 
 .section	.text
 keyMixing:
-	ret
+       // Grab block from memory for more efficient calculations
+    movq (%rdi), %rdx
+    movq 8(%rdi), %rax
+
+    // Perform bitwise XOR between key and block
+    xorq (%rsi), %rdx
+    xorq 8(%rsi), %rax
+
+    // Move result to memory
+    movq %rdx, (%rdi)
+    movq %rax, 8(%rdi)
+
+    ret
+    	
 
 
 byteSubstitution:
@@ -36,7 +49,7 @@ byteSubstitution:
     #rcx : counter
 
     loopbs:
-        movsbq (%rdi), %rax
+        movzbq (%rdi), %rax
         mov (%rax,%rsi), %dl
         mov %dl, (%rdi)
         inc %rdi                
@@ -47,8 +60,119 @@ byteSubstitution:
 	ret
 
 shiftRows:
+    pushq %rbp # not actually needed here..
+    movq %rsp, %rbp
+
+
+    mov $3,%rcx
+    #rdi = input_ptr
+    #rsi = sbox_ptr 
+    #rcx : counter
+
+    loopsr:
+        movl (%rdi, %rcx, 4), %r11d
+
+        pushq %rcx
+        # cmp $0, %rcx
+        # je jump_exit
+
+        inner:
+            rorl $8, %r11d
+            loop inner
+
+        popq %rcx
+        movl %r11d, (%rdi, %rcx, 4)
+
+        loop loopsr
+
+    leave
 	ret
 
 
 cipher:
+    pushq %rbp # not actually needed here..
+    movq %rsp, %rbp
+
+    # rdi - data ptr
+    # rsi - key
+    # rdx - len
+
+    mov %rdx, %rcx
+
+    loopc:
+        
+        push %rcx
+        push %rdi
+        push %rsi
+        call keyMixing
+        pop %rsi
+        pop %rdi
+        pop %rcx
+
+
+        push %rcx
+        mov $9, %rcx
+
+        innerc:
+
+            push %rcx
+
+            push %rdi
+            push %rsi
+            call byteSubstitution
+            pop %rsi
+            pop %rdi
+
+            push %rdi
+            push %rsi
+            call shiftRows
+            pop %rsi
+            pop %rdi
+
+            push %rdi
+            push %rsi
+            call mixColumns
+            pop %rsi
+            pop %rdi
+
+            push %rdi
+            push %rsi
+            call keyMixing
+            pop %rsi
+            pop %rdi
+            
+            pop %rcx
+            loop innerc
+
+        pop %rcx 
+
+        push %rcx
+        push %rdi
+        push %rsi
+        call byteSubstitution
+        pop %rsi
+        pop %rdi
+        pop %rcx
+
+        push %rcx
+        push %rdi
+        push %rsi
+        call shiftRows
+        pop %rsi
+        pop %rdi
+        pop %rcx
+
+        push %rcx
+        push %rdi
+        push %rsi
+        call keyMixing
+        pop %rsi
+        pop %rdi
+        pop %rcx
+
+        addq $16, %rdi
+        loop loopc
+
+    leave
 	ret
+
