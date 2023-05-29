@@ -21,7 +21,7 @@ asm ("lidt %0;"
 void my_set_gate_offset(gate_desc *gate, unsigned long addr) {
 // <STUDENT FILL> - HINT: NO NEED FOR INLINE ASSEMBLY
 gate -> offset_high = addr >> 32;
-gate -> offset_mid = (addr << 32) >> 48;
+gate -> offset_middle = (addr << 32) >> 48;
 gate -> offset_low = (addr  << 48) >> 48;
 
 // </STUDENT FILL>
@@ -32,7 +32,7 @@ unsigned long my_get_gate_offset(gate_desc *gate) {
 unsigned long addr = 0;
 addr = gate->offset_high;
 addr = addr << 16;
-addr = addr | gate->offset_mid;
+addr = addr | gate->offset_middle;
 addr = addr << 16;
 addr = addr | gate->offset_low;
 
