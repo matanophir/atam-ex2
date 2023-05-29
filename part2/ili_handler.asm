@@ -13,7 +13,7 @@ my_ili_handler:
 
 
   movq $1, %rbx
-  cmpb %dil, $0x0F
+  cmpb $0x0F,%dil
   jne my_ili_handler_call_what
 
   movq $2, %rbx
@@ -22,7 +22,7 @@ my_ili_handler:
   my_ili_handler_call_what:
   call what_to_do
 
-  cmp %rax, $0
+  cmpq $0,%rax
   je my_ili_handler_restore_old_control
 
   movq %rax, %rdi
@@ -38,5 +38,5 @@ my_ili_handler:
   popq %rax
   popq %rbx
   popq %rsi
-  jmp* old_ili_handler
+  jmp *old_ili_handler
   
