@@ -43,7 +43,6 @@ my_ili_handler:
 
 
   what_to_do_wrapper:
-    push %rax
     push %rdi
     push %rsi
     push %rdx
@@ -63,6 +62,5 @@ my_ili_handler:
     pop %rdx
     pop %rsi
     pop %rdi
-    pop %rax
 
     ret
