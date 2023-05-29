@@ -20,7 +20,7 @@ my_ili_handler:
   movzbq 1(%rsi), %rdi # second byte
 
   my_ili_handler_call_what:
-  call what_to_do
+  call what_to_do_wrapper
 
   cmpq $0,%rax
   je my_ili_handler_restore_old_control
@@ -40,3 +40,29 @@ my_ili_handler:
   popq %rsi
   jmp *old_ili_handler
   
+
+
+  what_to_do_wrapper:
+    push %rax
+    push %rdi
+    push %rsi
+    push %rdx
+    push %rcx
+    push %r8
+    push %r9
+    push %r10
+    push %r11
+
+    call what_to_do
+
+    pop %r11
+    pop %r10
+    pop %r9
+    pop %r8
+    pop %rcx
+    pop %rdx
+    pop %rsi
+    pop %rdi
+    pop %rax
+
+    ret
